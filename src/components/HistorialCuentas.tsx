@@ -1,44 +1,65 @@
 import React, { useState } from 'react';
-import { View, Text, Button, FlatList, StyleSheet, TextInput } from 'react-native';
-import { guardarDivisionCuenta, historialDeCuentas, cargarCuentaDesdeHistorial, resetearCuenta } from '../main'; // Importar las funciones necesarias
-import CargarCuentaButton from './CargarCuentaButton'; // Importar el botón para cargar cuenta
+import { View, Text, Button, FlatList, StyleSheet, TextInput, ScrollView, Alert } from 'react-native';
+import { guardarDivisionCuenta, historialDeCuentas, cargarCuentaDesdeHistorial, resetearCuenta, eliminarCuentaDelHistorial } from '../main';
 
 const HistorialCuentas = () => {
   const [actualizar, setActualizar] = useState(false);
   const [nombreCuenta, setNombreCuenta] = useState('');
 
-  // Función para guardar una nueva división de cuenta
   const guardarCuenta = () => {
     if (nombreCuenta.trim() !== '') {
       guardarDivisionCuenta(nombreCuenta);
-      setNombreCuenta(''); // Limpiar el input después de guardar
-      setActualizar(!actualizar); // Forzar actualización del componente
+      setNombreCuenta('');
+      setActualizar(!actualizar);
     } else {
-      alert('Por favor, ingrese un nombre para la cuenta');
+      Alert.alert('Error', 'Por favor, ingrese un nombre para la cuenta');
     }
   };
 
-  // Función para cargar la cuenta seleccionada desde el historial
   const cargarCuenta = (id: number) => {
     try {
-      cargarCuentaDesdeHistorial(id); // Llama a la función que carga la cuenta desde el historial
-      alert(`Cuenta con ID ${id} ha sido cargada.`);
+      cargarCuentaDesdeHistorial(id);
+      Alert.alert('Éxito', `Cuenta con ID ${id} ha sido cargada.`);
     } catch (error) {
-      alert(`Error al cargar la cuenta con ID ${id}: ${error.message}`);
+      Alert.alert('Error', `Error al cargar la cuenta con ID ${id}: ${error.message}`);
     }
   };
 
-  // Renderizado de cada elemento del historial
-  const renderItem = ({ item }: { item: { id: number; nombre: string; fecha: string } }) => (
+  const eliminarCuenta = (id: number) => {
+    console.log(`Intentando eliminar cuenta con ID: ${id}`);
+    try {
+      console.log(`Ejecutando eliminarCuentaDelHistorial(${id})`);
+      const resultado = eliminarCuentaDelHistorial(id);
+      console.log(`Resultado de la eliminación: ${resultado}`);
+      
+      if (resultado) {
+        console.log(`Cuenta con ID ${id} eliminada exitosamente`);
+        Alert.alert('Éxito', `Cuenta con ID ${id} ha sido eliminada.`);
+        setActualizar(!actualizar);
+      } else {
+        console.log(`No se pudo eliminar la cuenta con ID ${id}`);
+        Alert.alert('Error', `No se pudo eliminar la cuenta con ID ${id}.`);
+      }
+    } catch (error) {
+      console.error(`Error al eliminar cuenta: ${error}`);
+      Alert.alert('Error', `Error al eliminar la cuenta: ${error.message}`);
+    }
+    
+    console.log('Estado actual del historial:', historialDeCuentas);
+  };
+
+  const renderItem = ({ item }) => (
     <View style={styles.item}>
       <Text>{`ID: ${item.id}, Nombre: ${item.nombre}, Fecha: ${item.fecha}`}</Text>
-      {/* Botón para cargar la cuenta específica */}
-      <Button title="Cargar Cuenta" onPress={() => cargarCuenta(item.id)} />
+      <View style={styles.buttonContainer}>
+        <Button title="Cargar" onPress={() => cargarCuenta(item.id)} />
+        <Button title="Eliminar" onPress={() => eliminarCuenta(item.id)} color="red" />
+      </View>
     </View>
   );
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <TextInput
         style={styles.input}
         placeholder="Nombre de la cuenta"
@@ -46,22 +67,21 @@ const HistorialCuentas = () => {
         onChangeText={setNombreCuenta}
       />
       <Button title="Guardar División de Cuenta" onPress={guardarCuenta} />
-      {/* Botón para reiniciar la cuenta */}
-      <Button title="Reiniciar Cuenta" onPress={resetearCuenta} />
+      <Button title="Reiniciar Cuenta" onPress={() => { resetearCuenta(); setActualizar(!actualizar); }} />
       <Text style={styles.title}>Historial de Cuentas:</Text>
-      {/* FlatList que muestra el historial de cuentas */}
       <FlatList
         data={historialDeCuentas}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
-        extraData={actualizar} // Para forzar la actualización del FlatList cuando cambie el estado
+        extraData={actualizar}
       />
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     padding: 20,
   },
   input: {
@@ -81,6 +101,11 @@ const styles = StyleSheet.create({
     padding: 10,
     marginVertical: 8,
     borderRadius: 8,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
   },
 });
 

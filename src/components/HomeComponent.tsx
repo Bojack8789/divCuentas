@@ -1,19 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, FlatList, StyleSheet, TextInput } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, TouchableOpacity, FlatList, StyleSheet, TextInput, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { guardarDivisionCuenta, historialDeCuentas, cargarCuentaDesdeHistorial, resetearCuenta } from '../main';
+import { 
+  guardarDivisionCuenta, 
+  historialDeCuentas, 
+  cargarCuentaDesdeHistorial, 
+  resetearCuenta, 
+  eliminarCuentaDelHistorial
+} from '../main';
 
-const HomeComponent = () => {
-  const [showAccountList, setShowAccountList] = useState(false);
-  const [showNewAccountInput, setShowNewAccountInput] = useState(false);
-  const [newAccountName, setNewAccountName] = useState('');
-  const [accounts, setAccounts] = useState([]);
+type HistorialCuenta = {
+  id: number;
+  nombre: string;
+  fecha: string;
+  cuenta: {
+    totalCuenta: number;
+    totalesPorParticipante: { [key: string]: number };
+    comprasPorParticipante: { [key: string]: [string, number][] };
+  };
+};
+
+const HomeComponent: React.FC = () => {
+  const [showAccountList, setShowAccountList] = useState<boolean>(false);
+  const [showNewAccountInput, setShowNewAccountInput] = useState<boolean>(false);
+  const [newAccountName, setNewAccountName] = useState<string>('');
+  const [accounts, setAccounts] = useState<HistorialCuenta[]>([]);
   const navigation = useNavigation();
 
-  useEffect(() => {
-    // Cargar las cuentas del historial al montar el componente
-    setAccounts(historialDeCuentas);
+  const actualizarListaCuentas = useCallback(() => {
+    setAccounts([...historialDeCuentas]);
   }, []);
+
+  useEffect(() => {
+    actualizarListaCuentas();
+  }, [actualizarListaCuentas]);
 
   const handleNewAccount = () => {
     setShowNewAccountInput(true);
@@ -24,24 +44,63 @@ const HomeComponent = () => {
       guardarDivisionCuenta(newAccountName);
       setNewAccountName('');
       setShowNewAccountInput(false);
-      // Actualizar la lista de cuentas
-      setAccounts(historialDeCuentas);
-      // Navegar al Paso 1
-      navigation.navigate('Paso1');
+      actualizarListaCuentas();
+      navigation.navigate('Paso1' as never);
     } else {
-      alert('Por favor, ingrese un nombre para la cuenta');
+      Alert.alert('Error', 'Por favor, ingrese un nombre para la cuenta');
     }
   };
 
-  const handleLoadAccount = (id) => {
+  const handleLoadAccount = (id: number) => {
     try {
       cargarCuentaDesdeHistorial(id);
-      alert(`Cuenta con ID ${id} ha sido cargada.`);
-      navigation.navigate('Paso1');
+      Alert.alert('Éxito', `Cuenta con ID ${id} ha sido cargada.`);
+      navigation.navigate('Paso1' as never);
     } catch (error) {
-      alert(`Error al cargar la cuenta con ID ${id}: ${error.message}`);
+      Alert.alert('Error', `Error al cargar la cuenta con ID ${id}: ${(error as Error).message}`);
     }
   };
+
+  const handleDeleteAccount = (id: number) => {
+    console.log(`Intentando eliminar cuenta con ID: ${id}`);
+    try {
+      console.log(`Ejecutando eliminarCuentaDelHistorial(${id})`);
+      const resultado = eliminarCuentaDelHistorial(id);
+      console.log(`Resultado de la eliminación: ${resultado}`);
+      
+      if (resultado) {
+        console.log(`Cuenta con ID ${id} eliminada exitosamente`);
+        Alert.alert('Éxito', `Cuenta con ID ${id} ha sido eliminada.`);
+        actualizarListaCuentas();
+      } else {
+        console.log(`No se pudo eliminar la cuenta con ID ${id}`);
+        Alert.alert('Error', `No se pudo eliminar la cuenta con ID ${id}.`);
+      }
+    } catch (error) {
+      console.error(`Error al eliminar cuenta: ${error}`);
+      Alert.alert('Error', `Error al eliminar la cuenta: ${(error as Error).message}`);
+    }
+    
+    console.log('Estado actual del historial:', historialDeCuentas);
+  };
+
+  const renderAccountItem = ({ item }: { item: HistorialCuenta }) => (
+    <View style={styles.accountItem}>
+      <TouchableOpacity 
+        style={styles.accountInfo}
+        onPress={() => handleLoadAccount(item.id)}
+      >
+        <Text style={styles.accountName}>{item.nombre}</Text>
+        <Text style={styles.accountDate}>{item.fecha}</Text>
+      </TouchableOpacity>
+      <TouchableOpacity 
+        style={styles.deleteButton}
+        onPress={() => handleDeleteAccount(item.id)}
+      >
+        <Text style={styles.deleteButtonText}>Eliminar</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
@@ -53,7 +112,12 @@ const HomeComponent = () => {
         </TouchableOpacity>
         <TouchableOpacity 
           style={styles.button} 
-          onPress={() => setShowAccountList(!showAccountList)}
+          onPress={() => {
+            setShowAccountList(!showAccountList);
+            if (!showAccountList) {
+              actualizarListaCuentas();
+            }
+          }}
         >
           <Text style={styles.buttonText}>Cargar Cuenta</Text>
         </TouchableOpacity>
@@ -78,16 +142,9 @@ const HomeComponent = () => {
           <Text style={styles.cardTitle}>Cuentas Guardadas</Text>
           <FlatList
             data={accounts}
-            keyExtractor={item => item.id.toString()}
-            renderItem={({ item }) => (
-              <TouchableOpacity 
-                style={styles.accountItem}
-                onPress={() => handleLoadAccount(item.id)}
-              >
-                <Text style={styles.accountName}>{item.nombre}</Text>
-                <Text style={styles.accountDate}>{item.fecha}</Text>
-              </TouchableOpacity>
-            )}
+            renderItem={renderAccountItem}
+            keyExtractor={(item) => item.id.toString()}
+            extraData={accounts}
           />
         </View>
       )}
@@ -142,9 +199,15 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   accountItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
+  },
+  accountInfo: {
+    flex: 1,
   },
   accountName: {
     fontSize: 16,
@@ -153,6 +216,15 @@ const styles = StyleSheet.create({
   accountDate: {
     fontSize: 12,
     color: '#666',
+  },
+  deleteButton: {
+    backgroundColor: '#dc3545',
+    padding: 8,
+    borderRadius: 4,
+  },
+  deleteButtonText: {
+    color: '#fff',
+    fontSize: 12,
   },
   inputContainer: {
     marginBottom: 20,

@@ -265,17 +265,7 @@ export function cargarCuentaDesdeHistorial(id: number) {
   }
 }
 
-// Función para eliminar una cuenta del historial
-export function eliminarCuentaDelHistorial(id: number) {
-  const index = historialDeCuentas.findIndex(h => h.id === id);
-  if (index !== -1) {
-    historialDeCuentas.splice(index, 1);
-    guardarHistorialEnStorage(historialDeCuentas);
-    console.log(`Cuenta con ID ${id} eliminada del historial y almacenamiento local.`);
-    return true;
-  }
-  return false;
-}
+
 
 // Función para obtener todo el historial de cuentas
 export function obtenerHistorialDeCuentas(): HistorialCuenta[] {
@@ -322,3 +312,67 @@ listaDeParticipantes.forEach(participante => {
 
 // 7. Resetear la cuenta
  // Elimina todos los participantes
+
+ // Importaciones necesarias (asumimos que están en el mismo archivo)
+// import { historialDeCuentas, guardarHistorialEnStorage } from './tuArchivoOriginal';
+
+// Función mejorada para eliminar una cuenta del historial
+export function eliminarCuentaDelHistorial(id: number): boolean {
+  const indexInicial = historialDeCuentas.findIndex(cuenta => cuenta.id === id);
+  if (indexInicial !== -1) {
+    historialDeCuentas.splice(indexInicial, 1);
+    guardarHistorialEnStorage(historialDeCuentas);
+    console.log(`Cuenta con ID ${id} eliminada del historial y almacenamiento local.`);
+    return true;
+  }
+  console.log(`No se encontró una cuenta con ID ${id} en el historial.`);
+  return false;
+}
+
+// Función para eliminar múltiples cuentas
+export function eliminarMultiplesCuentas(ids: number[]): { exitosos: number[], fallidos: number[] } {
+  const exitosos: number[] = [];
+  const fallidos: number[] = [];
+
+  ids.forEach(id => {
+    if (eliminarCuentaDelHistorial(id)) {
+      exitosos.push(id);
+    } else {
+      fallidos.push(id);
+    }
+  });
+
+  return { exitosos, fallidos };
+}
+
+// Función para obtener el historial actual (para propósitos de prueba)
+export function obtenerHistorialActual(): HistorialCuenta[] {
+  return historialDeCuentas;
+}
+
+
+
+// Prueba de la funcionalidad
+function pruebaEliminarCuentas() {
+  console.log("Iniciando prueba de eliminación de cuentas...");
+
+  // Agregar cuentas de prueba
+
+  console.log("Historial inicial:", obtenerHistorialActual());
+
+  // Eliminar cuentas con ID 1, 2 y 3
+  const resultado = eliminarMultiplesCuentas([1, 2, 3]);
+  console.log("Resultado de la eliminación:", resultado);
+
+  // Verificar el historial actualizado
+  console.log("Historial después de la eliminación:", obtenerHistorialActual());
+
+  // Intentar eliminar una cuenta que ya no existe
+  const resultadoFallido = eliminarCuentaDelHistorial(1);
+  console.log("Intento de eliminar cuenta ya eliminada:", resultadoFallido);
+
+  console.log("Prueba completada.");
+}
+
+// Ejecutar la prueba
+pruebaEliminarCuentas();
