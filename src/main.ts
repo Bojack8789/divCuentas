@@ -232,11 +232,12 @@ export function guardarDivisionCuenta(nombre: string) {
       totalesPorParticipante: Object.fromEntries(totalesPorParticipante),
       comprasPorParticipante
     }
+    
   };
 
   historialDeCuentas.push(nuevaCuenta);
   guardarHistorialEnStorage(historialDeCuentas);
-
+  cuentaActualId = nuevaCuenta.id; // Actualizar el ID de la cuenta actual
   console.log(`Cuenta guardada en el historial y almacenamiento local: ${nombre}`);
 }
 
@@ -260,6 +261,7 @@ export function cargarCuentaDesdeHistorial(id: number) {
       nuevoParticipante.totalAPoner = totalCompra;
       listaDeParticipantes.push(nuevoParticipante);
     });
+    cuentaActualId = id; // Actualizar el ID de la cuenta actual
 
     console.log(`Cuenta cargada desde el historial: ${registro.nombre} con total: ${registro.cuenta.totalCuenta}`);
   }
@@ -278,43 +280,11 @@ export function resetearCuenta() {
 }
 
 
-// Ejemplo de uso
-
-// 1. Agregar algunos participantes
-agregarParticipante('Juan');
-agregarParticipante('Marcos');
-agregarParticipante('Ana');
-
-// 2. Agregar compras a los participantes
-agregarCompra(1, 'carne', 2000); // Juan
-agregarCompra(1, 'pan', 500);    // Juan
-agregarCompra(2, 'bebida', 1000); // Marcos
-agregarCompra(3, 'postre', 1500); // Ana
-
-// 3. Calcular la división de cuentas
-const division = calcularDivisionCuenta();
-console.log(`Total a dividir: ${division.totalCuenta}`);
-console.log(`Totales por participante:`, division.totalesPorParticipante);
-
-// 4. Guardar la división de cuentas
-guardarDivisionCuenta('Primera cuenta');
 
 
-resetearCuenta();
 
-// 5. Cargar desde el historial
-cargarCuentaDesdeHistorial(1); // Cargar la primera cuenta guardada
 
-// 6. Verificar que las compras se cargaron correctamente
-listaDeParticipantes.forEach(participante => {
-  console.log(`Participante: ${participante.nombre}, Compras: ${JSON.stringify(participante.compras)}`);
-});
 
-// 7. Resetear la cuenta
- // Elimina todos los participantes
-
- // Importaciones necesarias (asumimos que están en el mismo archivo)
-// import { historialDeCuentas, guardarHistorialEnStorage } from './tuArchivoOriginal';
 
 // Función mejorada para eliminar una cuenta del historial
 export function eliminarCuentaDelHistorial(id: number): boolean {
@@ -352,27 +322,31 @@ export function obtenerHistorialActual(): HistorialCuenta[] {
 
 
 
-// Prueba de la funcionalidad
-function pruebaEliminarCuentas() {
-  console.log("Iniciando prueba de eliminación de cuentas...");
+let cuentaActualId: number | null = null;
 
-  // Agregar cuentas de prueba
+export function updateCuentaDelHistorial(): boolean {
+  if (cuentaActualId) {
+    const indexInicial = historialDeCuentas.findIndex(cuenta => cuenta.id === cuentaActualId);
+    if (indexInicial !== -1) {
+      const { totalCuenta, totalesPorParticipante } = calcularDivisionCuenta();
 
-  console.log("Historial inicial:", obtenerHistorialActual());
+      const comprasPorParticipante: { [key: string]: [string, number][] } = {};
 
-  // Eliminar cuentas con ID 1, 2 y 3
-  const resultado = eliminarMultiplesCuentas([1, 2, 3]);
-  console.log("Resultado de la eliminación:", resultado);
+      listaDeParticipantes.forEach(participante => {
+        comprasPorParticipante[participante.nombre] = [...participante.compras];
+      });
 
-  // Verificar el historial actualizado
-  console.log("Historial después de la eliminación:", obtenerHistorialActual());
+      historialDeCuentas[indexInicial].cuenta = {
+        totalCuenta,
+        totalesPorParticipante: Object.fromEntries(totalesPorParticipante),
+        comprasPorParticipante
+      };
 
-  // Intentar eliminar una cuenta que ya no existe
-  const resultadoFallido = eliminarCuentaDelHistorial(1);
-  console.log("Intento de eliminar cuenta ya eliminada:", resultadoFallido);
-
-  console.log("Prueba completada.");
+      guardarHistorialEnStorage(historialDeCuentas);
+      console.log(`Cuenta actual con ID ${cuentaActualId} actualizada en el historial y almacenamiento local.`);
+      return true;
+    }
+  }
+  console.log('No se encontró una cuenta actual para actualizar.');
+  return false;
 }
-
-// Ejecutar la prueba
-pruebaEliminarCuentas();

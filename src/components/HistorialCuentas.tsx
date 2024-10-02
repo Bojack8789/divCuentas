@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, Button, FlatList, StyleSheet, TextInput, ScrollView, Alert } from 'react-native';
 import { guardarDivisionCuenta, historialDeCuentas, cargarCuentaDesdeHistorial, resetearCuenta, eliminarCuentaDelHistorial } from '../main';
+import ButtonGoToHome from './ButtonGoToHome';
+import ActualizarCuentaButton from './ActualizarCuentaButton';
 
 const HistorialCuentas = () => {
   const [actualizar, setActualizar] = useState(false);
@@ -60,13 +62,7 @@ const HistorialCuentas = () => {
 
   return (
     <ScrollView style={styles.container}>
-      <TextInput
-        style={styles.input}
-        placeholder="Nombre de la cuenta"
-        value={nombreCuenta}
-        onChangeText={setNombreCuenta}
-      />
-      <Button title="Guardar División de Cuenta" onPress={guardarCuenta} />
+     <ActualizarCuentaButton/>
       <Button title="Reiniciar Cuenta" onPress={() => { resetearCuenta(); setActualizar(!actualizar); }} />
       <Text style={styles.title}>Historial de Cuentas:</Text>
       <FlatList
@@ -75,6 +71,7 @@ const HistorialCuentas = () => {
         renderItem={renderItem}
         extraData={actualizar}
       />
+      <ButtonGoToHome />
     </ScrollView>
   );
 };

@@ -18,13 +18,17 @@ const AppBarNav = ({ navigation, route }: NativeStackHeaderProps) => {
 
   const goPrevious = () => {
     const currentIndex = screenOrder.indexOf(name as ScreenName);
-    if (currentIndex > 1) { // Allow going back to Paso1, but not to Home
+    if (currentIndex > 1) {
       navigation.navigate(screenOrder[currentIndex - 1]);
     }
   };
 
   const startProcess = () => {
     navigation.navigate('Paso1');
+  };
+
+  const goHome = () => {
+    navigation.navigate('Home');
   };
 
   return (
@@ -36,6 +40,7 @@ const AppBarNav = ({ navigation, route }: NativeStackHeaderProps) => {
           {name !== 'Paso1' && (
             <Button title="Anterior" onPress={goPrevious} />
           )}
+         
           {name !== 'Paso5' && (
             <Button title="Siguiente" onPress={goNext} />
           )}
