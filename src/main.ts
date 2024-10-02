@@ -20,12 +20,6 @@ export class Participante {
     this.participa.set(producto, true);
   }
 
-  
-  
-
-  // Método para actualizar la participación de una compra
-
-
   actualizarParticipacion(producto: string, participa: boolean) {
     if (this.participa.has(producto)) {
       this.participa.set(producto, participa);
@@ -34,81 +28,77 @@ export class Participante {
     }
   }
 
-
   calcularBalance() {
-      const totalCompras = this.compras.reduce((sum, [, precio]) => sum + precio, 0);
-      this.balanceTotal = totalCompras - this.totalAPoner;
-    }
+    const totalCompras = this.compras.reduce((sum, [, precio]) => sum + precio, 0);
+    this.balanceTotal = totalCompras - this.totalAPoner;
   }
-
-  let asignarId: number = 1;
-  export const listaDeParticipantes: Participante[] = [];
-  
-  export function agregarParticipante(nombre: string) {
-      const nuevoParticipante = new Participante(nombre, asignarId);
-      listaDeParticipantes.push(nuevoParticipante);
-      asignarId++;
-  }
-  
-  export function editarParticipante(id: number, nuevoNombre: string) {
-      const participante = listaDeParticipantes.find(p => p.id === id);
-      if (participante) {
-          participante.nombre = nuevoNombre;
-          return true;
-      }
-      return false;
-  }
-  
-  export function eliminarParticipante(id: number) {
-      const index = listaDeParticipantes.findIndex(p => p.id === id);
-      if (index !== -1) {
-          listaDeParticipantes.splice(index, 1);
-          return true;
-      }
-      return false;
-  }
-
-  export function agregarCompra(id: number, producto: string, precio: number): boolean {
-    const participante = listaDeParticipantes.find(p => p.id === id);
-    if (participante) {
-        console.log(`Participante encontrado: ${participante.nombre}`);
-        participante.agregarCompra(producto, precio);
-        return true;
-    } else {
-        console.log(`Participante con ID ${id} no encontrado.`);
-    }
-    return false;
 }
 
+let asignarId: number = 1;
+export const listaDeParticipantes: Participante[] = [];
 
+export function agregarParticipante(nombre: string) {
+  const nuevoParticipante = new Participante(nombre, asignarId);
+  listaDeParticipantes.push(nuevoParticipante);
+  asignarId++;
+}
 
-  export function editarCompra(id: number, productoOriginal: string, nuevoProducto: string, nuevoPrecio: number): boolean {
-    const participante = listaDeParticipantes.find(p => p.id === id);
-    if (participante) {
-        const compraIndex = participante.compras.findIndex(c => c[0] === productoOriginal);
-        if (compraIndex !== -1) {
-            participante.compras[compraIndex] = [nuevoProducto, nuevoPrecio];
-            participante.participa.set(nuevoProducto, true);
-            participante.participa.delete(productoOriginal);
-            return true;
-        }
+export function editarParticipante(id: number, nuevoNombre: string) {
+  const participante = listaDeParticipantes.find(p => p.id === id);
+  if (participante) {
+    participante.nombre = nuevoNombre;
+    return true;
+  }
+  return false;
+}
+
+export function eliminarParticipante(id: number) {
+  const index = listaDeParticipantes.findIndex(p => p.id === id);
+  if (index !== -1) {
+    listaDeParticipantes.splice(index, 1);
+    return true;
+  }
+  return false;
+}
+
+export function agregarCompra(id: number, producto: string, precio: number): boolean {
+  const participante = listaDeParticipantes.find(p => p.id === id);
+  if (participante) {
+    console.log(`Participante encontrado: ${participante.nombre}`);
+    participante.agregarCompra(producto, precio);
+    return true;
+  } else {
+    console.log(`Participante con ID ${id} no encontrado.`);
+  }
+  return false;
+}
+
+export function editarCompra(id: number, productoOriginal: string, nuevoProducto: string, nuevoPrecio: number): boolean {
+  const participante = listaDeParticipantes.find(p => p.id === id);
+  if (participante) {
+    const compraIndex = participante.compras.findIndex(c => c[0] === productoOriginal);
+    if (compraIndex !== -1) {
+      participante.compras[compraIndex] = [nuevoProducto, nuevoPrecio];
+      participante.participa.set(nuevoProducto, true);
+      participante.participa.delete(productoOriginal);
+      return true;
     }
-    return false;
+  }
+  return false;
 }
 
 export function eliminarCompra(id: number, producto: string): boolean {
   const participante = listaDeParticipantes.find(p => p.id === id);
   if (participante) {
-      const compraIndex = participante.compras.findIndex(c => c[0] === producto);
-      if (compraIndex !== -1) {
-          participante.compras.splice(compraIndex, 1);
-          participante.participa.delete(producto);
-          return true;
-      }
+    const compraIndex = participante.compras.findIndex(c => c[0] === producto);
+    if (compraIndex !== -1) {
+      participante.compras.splice(compraIndex, 1);
+      participante.participa.delete(producto);
+      return true;
+    }
   }
   return false;
 }
-
 
 function recogerListaDeCompras(): [string, number][] {
   return listaDeParticipantes.flatMap(participante => participante.compras);
@@ -135,7 +125,6 @@ export function modificarParticipacion(id: number, producto: string, participa: 
   return false;
 }
 
-
 export function calcularDivisionCuenta(): { totalCuenta: number, totalesPorParticipante: Map<string, number> } {
   const totalCuenta = recogerListaDeCompras().reduce((sum, [, precio]) => sum + precio, 0);
   const totalesPorParticipante = new Map<string, number>();
@@ -146,7 +135,7 @@ export function calcularDivisionCuenta(): { totalCuenta: number, totalesPorParti
 
   recogerListaDeCompras().forEach(([producto, precio]) => {
     const participantesEnCompra = listaDeParticipantes.filter(p => p.participa.get(producto));
-    
+
     if (participantesEnCompra.length > 0) {
       const precioPorParticipante = precio / participantesEnCompra.length;
       participantesEnCompra.forEach(p => {
@@ -195,178 +184,141 @@ export function repartir(participantes: Participante[]): { desde: string, hacia:
   return transferencias;
 }
 
-// Ejemplo de uso:
-// Agregar 10 participantes
-agregarParticipante('Juan');
-agregarParticipante('Marcos');
-agregarParticipante('Ana');
-agregarParticipante('Sofía');
-agregarParticipante('Pedro');
-agregarParticipante('Lucía');
-agregarParticipante('Jorge');
-agregarParticipante('Martín');
-agregarParticipante('Carla');
-agregarParticipante('Laura');
+// Tipo para el historial de cuentas
+type HistorialCuenta = {
+  id: number;
+  nombre: string;
+  fecha: string;
+  cuenta: {
+    totalCuenta: number;
+    totalesPorParticipante: { [key: string]: number };
+    comprasPorParticipante: { [key: string]: [string, number][] };
+  };
+};
 
-// Agregar compras: tres participantes compran dos o más cosas, dos no compran nada
-listaDeParticipantes[0].agregarCompra('Carne', 2000); 
-listaDeParticipantes[0].agregarCompra('Carne', 2000);  // Juan compra 1 cosa
-listaDeParticipantes[0].agregarCompra('Carne', 2000);  // Juan compra 1 cosa
-listaDeParticipantes[1].agregarCompra('Bebida', 1000); // Marcos compra 1 cosa
-listaDeParticipantes[2].agregarCompra('Postre', 1500); // Ana compra 2 cosas
-listaDeParticipantes[2].agregarCompra('Helado', 1100); // Ana compra otra cosa
-listaDeParticipantes[0].agregarCompra('merca', 2000);  // Juan compra 1 cosa
+// Clave para el almacenamiento local
+const STORAGE_KEY = 'historialDeCuentas';
 
-listaDeParticipantes[3].agregarCompra('Ensalada', 800); // Sofía no compra nada
-listaDeParticipantes[4].agregarCompra('Queso', 1200);  // Pedro compra 2 cosas
-listaDeParticipantes[4].agregarCompra('Vino', 1400);   // Pedro compra otra cosa
-listaDeParticipantes[5].agregarCompra('Pan', 500);     // Lucía compra 1 cosa
-listaDeParticipantes[6].agregarCompra('Salsa', 3000);   // Jorge compra 2 cosas
-listaDeParticipantes[6].agregarCompra('Fruta', 4000);   // Jorge compra otra cosa
-// Martín no compra nada
-listaDeParticipantes[8].agregarCompra('Chocolate', 300); // Carla compra 1 cosa
-listaDeParticipantes[9].agregarCompra('Cerveza', 900);   // Laura compra 1 cosa
+// Función para guardar el historial en el almacenamiento local
+function guardarHistorialEnStorage(historial: HistorialCuenta[]) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(historial));
+}
 
-// Actualizar participación (algunos no participan en algunos gastos)
-listaDeParticipantes[0].actualizarParticipacion('Bebida', false);  // Juan no participó en Bebida
-listaDeParticipantes[1].actualizarParticipacion('Carne', false);   // Marcos no participó en Carne
+// Función para cargar el historial desde el almacenamiento local
+function cargarHistorialDesdeStorage(): HistorialCuenta[] {
+  const historialString = localStorage.getItem(STORAGE_KEY);
+  return historialString ? JSON.parse(historialString) : [];
+}
 
-// Assuming the Participante class and related functions are already defined
-
-// Test adding participants
-console.log("Adding participants:");
-agregarParticipante("Alice");
-agregarParticipante("Bob");
-agregarParticipante("Charlie");
-
-// Test editing a participant
-console.log("\nEditing participant:");
-const editResult = editarParticipante(2, "Bobby");
-console.log("Edit successful:", editResult);
-
-// Test editing a non-existent participant
-console.log("\nTrying to edit a non-existent participant:");
-const failedEditResult = editarParticipante(10, "David");
-console.log("Edit successful:", failedEditResult);
-
-// Test deleting a participant
-console.log("\nDeleting participant:");
-const deleteResult = eliminarParticipante(3);
-console.log("Delete successful:", deleteResult);
-
-// Test deleting a non-existent participant
-console.log("\nTrying to delete a non-existent participant:");
-const failedDeleteResult = eliminarParticipante(20);
-console.log("Delete successful:", failedDeleteResult);
-
-// Actualizar participación (algunos no participan en algunos gastos)
-modificarParticipacion(2, 'Bebida', false);  //  boby no participó en Bebida
-
-
-modificarParticipacion(1, 'Carne', false);   // Juan no participó en Carne
-
-// Aplicar las compras a los participantes
-aplicarComprasAParticipantes();
-
-
-
-
-console.log('\nParticipantes con sus totales y balances:');
-listaDeParticipantes.forEach(p => {
-console.log(`${p.nombre}:`);
-console.log(`  Compras realizadas: ${JSON.stringify(p.compras)}`);
-console.log(`  Participación en compras: ${JSON.stringify(Object.fromEntries(p.participa))}`);
-console.log(`  Total a poner: ${p.totalAPoner.toFixed(2)}`);
-console.log(`  Balance total: ${p.balanceTotal.toFixed(2)}`);
-console.log(`  Interpretación: ${p.balanceTotal >= 0 ? 'Le deben' : 'Debe'} ${Math.abs(p.balanceTotal).toFixed(2)}`);
-});
-
-console.log('\nRepartición de pagos:');
-const transferencias = repartir(listaDeParticipantes);
-transferencias.forEach(t => {
-console.log(`${t.desde} debe pagar ${t.cantidad.toFixed(2)} a ${t.hacia}`);
-});
-
-
-console.log(transferencias);
-
-
-
-
-// Aplicar las compras a los participantes
-aplicarComprasAParticipantes();
-repartir(listaDeParticipantes);
-//calculkar cuentas 
-const { totalCuenta, totalesPorParticipante } = calcularDivisionCuenta();
-
-console.log('Total de la cuenta:', totalCuenta);
-console.log('División por participante:');
-totalesPorParticipante.forEach((total, nombre) => {
-console.log(`${nombre}: ${total.toFixed(2)}`);
-});
-
-calcularDivisionCuenta();
-
-console.log(listaDeParticipantes);
-console.log(transferencias);
-
-
-
-// ... (código anterior sin cambios)
-
-export const historialDeCuentas: { id: number, nombre: string, fecha: string, cuenta: { totalCuenta: number, totalesPorParticipante: Map<string, number> } }[] = [];
+// Modificar la variable historialDeCuentas para que se cargue desde el almacenamiento local
+export let historialDeCuentas: HistorialCuenta[] = cargarHistorialDesdeStorage();
 
 export function guardarDivisionCuenta(nombre: string) {
   const fecha = new Date().toLocaleString();
   const { totalCuenta, totalesPorParticipante } = calcularDivisionCuenta();
 
-  const nuevaCuenta = {
-    id: historialDeCuentas.length > 0 ? historialDeCuentas[historialDeCuentas.length - 1].id + 1 : 1,
-    nombre: nombre,
-    fecha: fecha,
-    cuenta: { totalCuenta, totalesPorParticipante },
+  const comprasPorParticipante: { [key: string]: [string, number][] } = {};
+
+  listaDeParticipantes.forEach(participante => {
+    comprasPorParticipante[participante.nombre] = [...participante.compras];
+  });
+
+  const nuevaCuenta: HistorialCuenta = {
+    id: historialDeCuentas.length + 1,
+    nombre,
+    fecha,
+    cuenta: {
+      totalCuenta,
+      totalesPorParticipante: Object.fromEntries(totalesPorParticipante),
+      comprasPorParticipante
+    }
   };
 
   historialDeCuentas.push(nuevaCuenta);
+  guardarHistorialEnStorage(historialDeCuentas);
 
-  if (historialDeCuentas.length > 10) {
-    historialDeCuentas.shift();
-  }
-
-  console.log(`Cuenta guardada: ${nuevaCuenta.id}, Nombre: ${nuevaCuenta.nombre}, Fecha: ${nuevaCuenta.fecha}`);
+  console.log(`Cuenta guardada en el historial y almacenamiento local: ${nombre}`);
 }
 
-export function reiniciarCuentaActual() {
-  // Guardar la cuenta actual en el historial antes de reiniciar
-  if (listaDeParticipantes.length > 0) {
-    guardarDivisionCuenta("Cuenta anterior");
-  }
+export function cargarCuentaDesdeHistorial(id: number) {
+  const registro = historialDeCuentas.find(h => h.id === id);
+  if (registro) {
+    resetearCuenta();
 
-  // Reiniciar la lista de participantes
+    const { totalesPorParticipante, comprasPorParticipante } = registro.cuenta;
+
+    Object.entries(totalesPorParticipante).forEach(([nombre, totalCompra]) => {
+      const comprasGuardadas = comprasPorParticipante[nombre];
+
+      const nuevoParticipante = new Participante(nombre, asignarId);
+      asignarId++;
+
+      if (comprasGuardadas) {
+        nuevoParticipante.compras = comprasGuardadas;
+      }
+
+      nuevoParticipante.totalAPoner = totalCompra;
+      listaDeParticipantes.push(nuevoParticipante);
+    });
+
+    console.log(`Cuenta cargada desde el historial: ${registro.nombre} con total: ${registro.cuenta.totalCuenta}`);
+  }
+}
+
+// Función para eliminar una cuenta del historial
+export function eliminarCuentaDelHistorial(id: number) {
+  const index = historialDeCuentas.findIndex(h => h.id === id);
+  if (index !== -1) {
+    historialDeCuentas.splice(index, 1);
+    guardarHistorialEnStorage(historialDeCuentas);
+    console.log(`Cuenta con ID ${id} eliminada del historial y almacenamiento local.`);
+    return true;
+  }
+  return false;
+}
+
+// Función para obtener todo el historial de cuentas
+export function obtenerHistorialDeCuentas(): HistorialCuenta[] {
+  return historialDeCuentas;
+}
+export function resetearCuenta() {
   listaDeParticipantes.length = 0;
-
-  // Reiniciar el contador de ID
-  asignarId = 1;
-
-  console.log("La cuenta actual ha sido reiniciada. Una nueva cuenta está lista para ser iniciada.");
+  // Si no hay participantes en la lista, asignarId empieza en 1; de lo contrario, en el ID más alto + 1
+  asignarId = listaDeParticipantes.length > 0 ? Math.max(...listaDeParticipantes.map(p => p.id)) + 1 : 1;
 }
 
-
-// Función para cargar una compra guardada
-export function cargarCompraPorId(id: number) {
-  const compraEncontrada = historialDeCuentas.find(compra => compra.id === id);
-  
-  if (compraEncontrada) {
-      return compraEncontrada;
-  } else {
-      throw new Error(`No se encontró ninguna compra con el id: ${id}`);
-  }
-}
 
 // Ejemplo de uso
-try {
-  const compra = cargarCompraPorId(1); // Cambia el 1 por el id que deseas cargar
-  console.log('Compra cargada:', compra);
-} catch (error) {
-  console.error(error.message);
-}
+
+// 1. Agregar algunos participantes
+agregarParticipante('Juan');
+agregarParticipante('Marcos');
+agregarParticipante('Ana');
+
+// 2. Agregar compras a los participantes
+agregarCompra(1, 'carne', 2000); // Juan
+agregarCompra(1, 'pan', 500);    // Juan
+agregarCompra(2, 'bebida', 1000); // Marcos
+agregarCompra(3, 'postre', 1500); // Ana
+
+// 3. Calcular la división de cuentas
+const division = calcularDivisionCuenta();
+console.log(`Total a dividir: ${division.totalCuenta}`);
+console.log(`Totales por participante:`, division.totalesPorParticipante);
+
+// 4. Guardar la división de cuentas
+guardarDivisionCuenta('Primera cuenta');
+
+
+resetearCuenta();
+
+// 5. Cargar desde el historial
+cargarCuentaDesdeHistorial(1); // Cargar la primera cuenta guardada
+
+// 6. Verificar que las compras se cargaron correctamente
+listaDeParticipantes.forEach(participante => {
+  console.log(`Participante: ${participante.nombre}, Compras: ${JSON.stringify(participante.compras)}`);
+});
+
+// 7. Resetear la cuenta
+ // Elimina todos los participantes

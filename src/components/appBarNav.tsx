@@ -1,56 +1,45 @@
-// src/components/appBarNav.tsx
 import React from 'react';
 import { View, Button, StyleSheet } from 'react-native';
 import { NativeStackHeaderProps } from '@react-navigation/native-stack';
 
+type ScreenName = 'Home' | 'Paso1' | 'Paso2' | 'Paso3' | 'Paso4' | 'Paso5';
+
 const AppBarNav = ({ navigation, route }: NativeStackHeaderProps) => {
   const { name } = route;
 
+  const screenOrder: ScreenName[] = ['Home', 'Paso1', 'Paso2', 'Paso3', 'Paso4', 'Paso5'];
+
   const goNext = () => {
-    switch (name) {
-      case 'Paso1':
-        navigation.navigate('Paso2');
-        break;
-      case 'Paso2':
-        navigation.navigate('Paso3');
-        break;
-      case 'Paso3':
-        navigation.navigate('Paso4');
-        break;
-      case 'Paso4':
-        navigation.navigate('Paso5');
-        break;
-      default:
-        break;
+    const currentIndex = screenOrder.indexOf(name as ScreenName);
+    if (currentIndex < screenOrder.length - 1) {
+      navigation.navigate(screenOrder[currentIndex + 1]);
     }
   };
 
   const goPrevious = () => {
-    switch (name) {
-      case 'Paso2':
-        navigation.navigate('Paso1');
-        break;
-      case 'Paso3':
-        navigation.navigate('Paso2');
-        break;
-      case 'Paso4':
-        navigation.navigate('Paso3');
-        break;
-      case 'Paso5':
-        navigation.navigate('Paso4');
-        break;
-      default:
-        break;
+    const currentIndex = screenOrder.indexOf(name as ScreenName);
+    if (currentIndex > 1) { // Allow going back to Paso1, but not to Home
+      navigation.navigate(screenOrder[currentIndex - 1]);
     }
+  };
+
+  const startProcess = () => {
+    navigation.navigate('Paso1');
   };
 
   return (
     <View style={styles.container}>
-      {name !== 'Paso1' && (
-        <Button title="Anterior" onPress={goPrevious} />
-      )}
-      {name !== 'Paso5' && (
-        <Button title="Siguiente" onPress={goNext} />
+      {name === 'Home' ? (
+        <Button title="Iniciar Proceso" onPress={startProcess} />
+      ) : (
+        <>
+          {name !== 'Paso1' && (
+            <Button title="Anterior" onPress={goPrevious} />
+          )}
+          {name !== 'Paso5' && (
+            <Button title="Siguiente" onPress={goNext} />
+          )}
+        </>
       )}
     </View>
   );
