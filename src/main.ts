@@ -312,28 +312,61 @@ console.log(transferencias);
 
 
 
-// Array que almacenará las últimas 10 divisiones de cuentas
-export const historialDeCuentas: { id: number, fecha: string, cuenta: { totalCuenta: number, totalesPorParticipante: Map<string, number> } }[] = [];
+// ... (código anterior sin cambios)
 
-// Función para guardar la última división de cuentas
-export function guardarDivisionCuenta() {
-  const fecha = new Date().toLocaleString(); // Fecha y hora actual
+export const historialDeCuentas: { id: number, nombre: string, fecha: string, cuenta: { totalCuenta: number, totalesPorParticipante: Map<string, number> } }[] = [];
+
+export function guardarDivisionCuenta(nombre: string) {
+  const fecha = new Date().toLocaleString();
   const { totalCuenta, totalesPorParticipante } = calcularDivisionCuenta();
 
-  // Asignamos un id incremental a cada cuenta
   const nuevaCuenta = {
     id: historialDeCuentas.length > 0 ? historialDeCuentas[historialDeCuentas.length - 1].id + 1 : 1,
+    nombre: nombre,
     fecha: fecha,
     cuenta: { totalCuenta, totalesPorParticipante },
   };
 
-  // Agregar la nueva cuenta al historial
   historialDeCuentas.push(nuevaCuenta);
 
-  // Limitar el array a las últimas 10 divisiones
   if (historialDeCuentas.length > 10) {
     historialDeCuentas.shift();
   }
 
-  console.log(`Cuenta guardada: ${nuevaCuenta.id}, Fecha: ${nuevaCuenta.fecha}`);
+  console.log(`Cuenta guardada: ${nuevaCuenta.id}, Nombre: ${nuevaCuenta.nombre}, Fecha: ${nuevaCuenta.fecha}`);
+}
+
+export function reiniciarCuentaActual() {
+  // Guardar la cuenta actual en el historial antes de reiniciar
+  if (listaDeParticipantes.length > 0) {
+    guardarDivisionCuenta("Cuenta anterior");
+  }
+
+  // Reiniciar la lista de participantes
+  listaDeParticipantes.length = 0;
+
+  // Reiniciar el contador de ID
+  asignarId = 1;
+
+  console.log("La cuenta actual ha sido reiniciada. Una nueva cuenta está lista para ser iniciada.");
+}
+
+
+// Función para cargar una compra guardada
+export function cargarCompraPorId(id: number) {
+  const compraEncontrada = historialDeCuentas.find(compra => compra.id === id);
+  
+  if (compraEncontrada) {
+      return compraEncontrada;
+  } else {
+      throw new Error(`No se encontró ninguna compra con el id: ${id}`);
+  }
+}
+
+// Ejemplo de uso
+try {
+  const compra = cargarCompraPorId(1); // Cambia el 1 por el id que deseas cargar
+  console.log('Compra cargada:', compra);
+} catch (error) {
+  console.error(error.message);
 }
