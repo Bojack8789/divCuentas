@@ -41,12 +41,14 @@ export function agregarParticipante(nombre: string) {
   const nuevoParticipante = new Participante(nombre, asignarId);
   listaDeParticipantes.push(nuevoParticipante);
   asignarId++;
+  updateCuentaDelHistorial(); // Actualizar el estado de la cuenta
 }
 
 export function editarParticipante(id: number, nuevoNombre: string) {
   const participante = listaDeParticipantes.find(p => p.id === id);
   if (participante) {
     participante.nombre = nuevoNombre;
+    updateCuentaDelHistorial(); // Actualizar el estado de la cuenta
     return true;
   }
   return false;
@@ -56,6 +58,7 @@ export function eliminarParticipante(id: number) {
   const index = listaDeParticipantes.findIndex(p => p.id === id);
   if (index !== -1) {
     listaDeParticipantes.splice(index, 1);
+    updateCuentaDelHistorial(); // Actualizar el estado de la cuenta
     return true;
   }
   return false;
@@ -66,6 +69,7 @@ export function agregarCompra(id: number, producto: string, precio: number): boo
   if (participante) {
     console.log(`Participante encontrado: ${participante.nombre}`);
     participante.agregarCompra(producto, precio);
+    updateCuentaDelHistorial(); // Actualizar el estado de la cuenta
     return true;
   } else {
     console.log(`Participante con ID ${id} no encontrado.`);
@@ -81,6 +85,7 @@ export function editarCompra(id: number, productoOriginal: string, nuevoProducto
       participante.compras[compraIndex] = [nuevoProducto, nuevoPrecio];
       participante.participa.set(nuevoProducto, true);
       participante.participa.delete(productoOriginal);
+      updateCuentaDelHistorial(); // Actualizar el estado de la cuenta
       return true;
     }
   }
@@ -94,6 +99,7 @@ export function eliminarCompra(id: number, producto: string): boolean {
     if (compraIndex !== -1) {
       participante.compras.splice(compraIndex, 1);
       participante.participa.delete(producto);
+      updateCuentaDelHistorial(); // Actualizar el estado de la cuenta
       return true;
     }
   }
@@ -119,6 +125,7 @@ export function modificarParticipacion(id: number, producto: string, participa: 
   const participante = listaDeParticipantes.find(p => p.id === id);
   if (participante) {
     participante.actualizarParticipacion(producto, participa);
+    updateCuentaDelHistorial(); // Actualizar el estado de la cuenta
     return true;
   }
   console.log(`Participante con ID ${id} no encontrado.`);
@@ -193,6 +200,7 @@ type HistorialCuenta = {
     totalCuenta: number;
     totalesPorParticipante: { [key: string]: number };
     comprasPorParticipante: { [key: string]: [string, number][] };
+    participacionPorParticipante: { [key: string]: { [key: string]: boolean } };
   };
 };
 
@@ -218,9 +226,11 @@ export function guardarDivisionCuenta(nombre: string) {
   const { totalCuenta, totalesPorParticipante } = calcularDivisionCuenta();
 
   const comprasPorParticipante: { [key: string]: [string, number][] } = {};
+  const participacionPorParticipante: { [key: string]: { [key: string]: boolean } } = {};
 
   listaDeParticipantes.forEach(participante => {
     comprasPorParticipante[participante.nombre] = [...participante.compras];
+    participacionPorParticipante[participante.nombre] = Object.fromEntries(participante.participa);
   });
 
   const nuevaCuenta: HistorialCuenta = {
@@ -230,9 +240,9 @@ export function guardarDivisionCuenta(nombre: string) {
     cuenta: {
       totalCuenta,
       totalesPorParticipante: Object.fromEntries(totalesPorParticipante),
-      comprasPorParticipante
+      comprasPorParticipante,
+      participacionPorParticipante
     }
-    
   };
 
   historialDeCuentas.push(nuevaCuenta);
@@ -246,10 +256,11 @@ export function cargarCuentaDesdeHistorial(id: number) {
   if (registro) {
     resetearCuenta();
 
-    const { totalesPorParticipante, comprasPorParticipante } = registro.cuenta;
+    const { totalesPorParticipante, comprasPorParticipante, participacionPorParticipante } = registro.cuenta;
 
     Object.entries(totalesPorParticipante).forEach(([nombre, totalCompra]) => {
       const comprasGuardadas = comprasPorParticipante[nombre];
+      const participacionGuardada = participacionPorParticipante[nombre];
 
       const nuevoParticipante = new Participante(nombre, asignarId);
       asignarId++;
@@ -258,33 +269,30 @@ export function cargarCuentaDesdeHistorial(id: number) {
         nuevoParticipante.compras = comprasGuardadas;
       }
 
+      if (participacionGuardada) {
+        nuevoParticipante.participa = new Map(Object.entries(participacionGuardada));
+      }
+
       nuevoParticipante.totalAPoner = totalCompra;
       listaDeParticipantes.push(nuevoParticipante);
     });
+
     cuentaActualId = id; // Actualizar el ID de la cuenta actual
 
     console.log(`Cuenta cargada desde el historial: ${registro.nombre} con total: ${registro.cuenta.totalCuenta}`);
   }
 }
 
-
-
 // Función para obtener todo el historial de cuentas
 export function obtenerHistorialDeCuentas(): HistorialCuenta[] {
   return historialDeCuentas;
 }
+
 export function resetearCuenta() {
   listaDeParticipantes.length = 0;
   // Si no hay participantes en la lista, asignarId empieza en 1; de lo contrario, en el ID más alto + 1
   asignarId = listaDeParticipantes.length > 0 ? Math.max(...listaDeParticipantes.map(p => p.id)) + 1 : 1;
 }
-
-
-
-
-
-
-
 
 // Función mejorada para eliminar una cuenta del historial
 export function eliminarCuentaDelHistorial(id: number): boolean {
@@ -320,26 +328,28 @@ export function obtenerHistorialActual(): HistorialCuenta[] {
   return historialDeCuentas;
 }
 
-
-
 let cuentaActualId: number | null = null;
 
 export function updateCuentaDelHistorial(): boolean {
   if (cuentaActualId) {
     const indexInicial = historialDeCuentas.findIndex(cuenta => cuenta.id === cuentaActualId);
     if (indexInicial !== -1) {
+      const cuentaActual = historialDeCuentas[indexInicial];
       const { totalCuenta, totalesPorParticipante } = calcularDivisionCuenta();
 
       const comprasPorParticipante: { [key: string]: [string, number][] } = {};
+      const participacionPorParticipante: { [key: string]: { [key: string]: boolean } } = {};
 
       listaDeParticipantes.forEach(participante => {
         comprasPorParticipante[participante.nombre] = [...participante.compras];
+        participacionPorParticipante[participante.nombre] = Object.fromEntries(participante.participa);
       });
 
-      historialDeCuentas[indexInicial].cuenta = {
+      cuentaActual.cuenta = {
         totalCuenta,
         totalesPorParticipante: Object.fromEntries(totalesPorParticipante),
-        comprasPorParticipante
+        comprasPorParticipante,
+        participacionPorParticipante
       };
 
       guardarHistorialEnStorage(historialDeCuentas);
@@ -350,3 +360,5 @@ export function updateCuentaDelHistorial(): boolean {
   console.log('No se encontró una cuenta actual para actualizar.');
   return false;
 }
+
+cargarCuentaDesdeHistorial(4)

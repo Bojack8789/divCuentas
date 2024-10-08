@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, TouchableOpacity, FlatList, StyleSheet, TextInput, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, StyleSheet, Dimensions, TextInput, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { 
   guardarDivisionCuenta, 
@@ -8,6 +8,9 @@ import {
   resetearCuenta, 
   eliminarCuentaDelHistorial
 } from '../main';
+
+
+const { width, height } = Dimensions.get('window');
 
 type HistorialCuenta = {
   id: number;
@@ -152,95 +155,129 @@ const HomeComponent: React.FC = () => {
   );
 };
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#1ec3ea', // Fondo principal
+    width: width,
+    height: height,
+  },
+  contentContainer: {
+    flex: 1,
     padding: 20,
-    width: '100%',
-    backgroundColor: '#f5f5f5',
+    justifyContent: 'space-between',
   },
   title: {
-    fontSize: 24,
+    fontSize: width * 0.08,
     fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#333',
+    color: '#FFFFFF',
     textAlign: 'center',
+    marginVertical: height * 0.05,
   },
   buttonContainer: {
-    marginBottom: 20,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: height * 0.05,
   },
   button: {
-    backgroundColor: '#0070f3',
-    padding: 15,
-    borderRadius: 4,
-    marginBottom: 10,
+    backgroundColor: '#4bb4ca',
+    paddingVertical: height * 0.02,
+    paddingHorizontal: width * 0.1,
+    borderRadius: 25,
+    marginBottom: height * 0.02,
+    width: '80%',
+    alignItems: 'center',
   },
   buttonText: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontWeight: 'bold',
     textAlign: 'center',
-    fontSize: 16,
+    fontSize: width * 0.045,
   },
   card: {
-    backgroundColor: '#fff',
-    borderRadius: 4,
+    backgroundColor: '#88a19f',
+    borderRadius: 10,
     padding: 15,
-    marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    marginTop: height * 0.02,
+    maxHeight: height * 0.5,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: width * 0.045,
     fontWeight: 'bold',
     marginBottom: 10,
-    color: '#333',
+    color: '#FFFFFF',
   },
   accountItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 10,
+    paddingVertical: height * 0.015,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#6aabb5',
+    marginBottom: 8,
   },
   accountInfo: {
     flex: 1,
   },
   accountName: {
-    fontSize: 16,
-    color: '#333',
+    fontSize: width * 0.04,
+    color: '#FFFFFF',
+    fontWeight: 'bold',
   },
   accountDate: {
-    fontSize: 12,
-    color: '#666',
+    fontSize: width * 0.03,
+    color: '#a6988a',
   },
   deleteButton: {
-    backgroundColor: '#dc3545',
-    padding: 8,
-    borderRadius: 4,
+    backgroundColor: '#6aabb5',
+    padding: width * 0.02,
+    borderRadius: 15,
   },
   deleteButtonText: {
-    color: '#fff',
-    fontSize: 12,
+    color: '#FFFFFF',
+    fontSize: width * 0.03,
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: height * 0.02,
+    width: '100%',
   },
   input: {
-    height: 40,
-    borderColor: 'gray',
+    height: height * 0.06,
+    borderColor: '#4bb4ca',
     borderWidth: 1,
-    marginBottom: 10,
-    paddingHorizontal: 10,
-    backgroundColor: '#fff',
+    marginBottom: height * 0.01,
+    paddingHorizontal: width * 0.03,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    width: '100%',
   },
   saveButton: {
-    backgroundColor: '#28a745',
-    padding: 15,
-    borderRadius: 4,
+    backgroundColor: '#4bb4ca',
+    padding: height * 0.02,
+    borderRadius: 25,
+    width: '80%',
+    alignSelf: 'center',
+  },
+  listContainer: {
+    backgroundColor: '#6aabb5',
+    borderRadius: 10,
+    padding: 10,
+    marginTop: 10,
+  },
+  listItem: {
+    backgroundColor: '#88a19f',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  listItemText: {
+    color: '#FFFFFF',
+    fontSize: width * 0.04,
   },
 });
 

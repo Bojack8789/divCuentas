@@ -3,6 +3,7 @@ import { View, Text, FlatList, StyleSheet, ScrollView } from 'react-native';
 import { calcularDivisionCuenta, repartir, listaDeParticipantes } from '../main';
 import { Participante } from '../main';
 import BalanceBarChart from './BalanceBarChart';
+import PDFWrapper from './PDFWrapper';
 
 const CuentasManagement: React.FC = () => {
   const [totalCuenta, setTotalCuenta] = useState<number>(0);
@@ -43,6 +44,8 @@ const CuentasManagement: React.FC = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+              <PDFWrapper>
+
       <Text style={styles.title}>Resumen de Cuentas</Text>
       <Text style={styles.totalCuenta}>Total de la Cuenta: ${totalCuenta.toFixed(2)}</Text>
       <FlatList
@@ -61,6 +64,8 @@ const CuentasManagement: React.FC = () => {
       <View style={styles.chartContainer}>
         <BalanceBarChart transferencias={transferencias} />
       </View>
+      </PDFWrapper>
+
     </ScrollView>
     
   );
